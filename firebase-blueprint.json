@@ -1,0 +1,184 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application, can be a buyer or seller.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "photoURL": { "type": "string", "description": "URL to the user's profile photo." },
+        "role": { "type": "string", "enum": ["buyer", "seller"], "description": "The user's role." },
+        "language": { "type": "string", "enum": ["en", "my", "lo", "th", "zh"], "description": "The user's preferred language." },
+        "isPremium": { "type": "boolean", "description": "Whether the user has a premium membership." },
+        "premiumStatus": { "type": "string", "enum": ["none", "pending", "approved", "rejected"], "description": "The status of the user's premium membership request." },
+        "shopLocation": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" }
+          },
+          "description": "The shop location of the seller (optional)."
+        },
+        "homeLocation": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" }
+          },
+          "description": "The home location of the user (optional)."
+        },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user account was created." }
+      },
+      "required": ["uid", "displayName", "email", "role", "createdAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "A product listed for sale by a seller.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the product." },
+        "description": { "type": "string", "description": "The description of the product." },
+        "price": { "type": "number", "description": "The price of the product." },
+        "discountPrice": { "type": "number", "description": "The discounted price of the product (optional)." },
+        "currency": { "type": "string", "enum": ["MMK", "THB", "USD", "LAK", "CNY"], "description": "The currency of the price." },
+        "category": { "type": "string", "description": "The category of the product." },
+        "image": { "type": "string", "description": "URL to the product image." },
+        "images": { "type": "array", "items": { "type": "string" }, "description": "Array of product images." },
+        "video": { "type": "string", "description": "URL to the product video." },
+        "sellerId": { "type": "string", "description": "The UID of the seller who listed the product." },
+        "sellerName": { "type": "string", "description": "The display name of the seller." },
+        "sellerPhoto": { "type": "string", "description": "The photo URL of the seller." },
+        "sellerLocation": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the product was listed." }
+      },
+      "required": ["title", "price", "currency", "image", "sellerId", "sellerName", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A chat session between a buyer and a seller.",
+      "type": "object",
+      "properties": {
+        "buyerId": { "type": "string", "description": "The UID of the buyer." },
+        "sellerId": { "type": "string", "description": "The UID of the seller." },
+        "deliveryId": { "type": "string", "description": "The UID of the delivery person (optional)." },
+        "participants": { "type": "array", "items": { "type": "string" }, "description": "Array of UIDs of all participants." },
+        "productId": { "type": "string", "description": "The ID of the product being discussed." },
+        "productTitle": { "type": "string", "description": "The title of the product." },
+        "productImage": { "type": "string", "description": "The image of the product." },
+        "lastMessage": { "type": "string", "description": "The last message sent in the chat." },
+        "lastMessageTime": { "type": "number", "description": "Timestamp of the last message." },
+        "createdAt": { "type": "number", "description": "When the chat was created." },
+        "buyerTyping": { "type": "boolean" },
+        "sellerTyping": { "type": "boolean" }
+      },
+      "required": ["buyerId", "sellerId", "participants", "productId", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message within a chat.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string", "description": "The UID of the sender." },
+        "text": { "type": "string", "description": "The original text of the message." },
+        "originalLang": { "type": "string", "description": "The original language code." },
+        "translations": { "type": "object", "description": "A map of language codes to translated text." },
+        "timestamp": { "type": "number", "description": "When the message was sent." },
+        "isLocation": { "type": "boolean", "description": "Whether the message is a location share." },
+        "isRead": { "type": "boolean", "description": "Whether the message has been read." },
+        "imageUrl": { "type": "string", "description": "URL to an image attached to the message (optional)." }
+      },
+      "required": ["senderId", "timestamp"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "A product favorited by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user." },
+        "productId": { "type": "string", "description": "The ID of the favorited product." },
+        "createdAt": { "type": "number", "description": "When the product was favorited." }
+      },
+      "required": ["userId", "productId", "createdAt"]
+    },
+    "Address": {
+      "title": "Address",
+      "description": "User shipping address.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phone": { "type": "string" },
+        "addressLine": { "type": "string" },
+        "city": { "type": "string" },
+        "latitude": { "type": "number", "description": "Latitude of the address." },
+        "longitude": { "type": "number", "description": "Longitude of the address." },
+        "isDefault": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "fullName", "phone", "addressLine", "city"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A purchase order.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sellerIds": { "type": "array", "items": { "type": "string" }, "description": "Array of seller UIDs involved in this order." },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processing", "shipped", "delivering", "delivered", "cancelled"] },
+        "address": { "type": "object" },
+        "sellerLocation": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "updatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles."
+    },
+    "products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Stores all products listed by sellers."
+    },
+    "chats/{chatId}": {
+      "schema": { "$ref": "#/entities/Chat" },
+      "description": "Stores chat sessions."
+    },
+    "chats/{chatId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Stores messages within a chat session."
+    },
+    "favorites/{favoriteId}": {
+      "schema": { "$ref": "#/entities/Favorite" },
+      "description": "Stores products favorited by users."
+    },
+    "addresses/{addressId}": {
+      "schema": { "$ref": "#/entities/Address" },
+      "description": "Stores user shipping addresses."
+    },
+    "orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Stores purchase orders."
+    }
+  }
+}

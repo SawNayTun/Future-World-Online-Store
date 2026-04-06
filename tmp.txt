@@ -1,0 +1,170 @@
+129:        <Navigation className="w-5 h-5" /> {t(appLang, 'currentLocation')}
+170:      showToast(t(appLang, 'profileUpdated'));
+173:      showToast(t(appLang, 'profileUpdateFail'));
+191:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+193:        <h2 className="text-2xl font-bold text-slate-900">{t(appLang, 'accountManagement')}</h2>
+198:          <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'fullName')}</label>
+207:          <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'bio')}</label>
+220:              <Store className="w-5 h-5 text-indigo-600" /> {t(appLang, 'shopLocation')}
+245:          {isSaving ? t(appLang, 'saving') : t(appLang, 'saveChanges')}
+262:          <Popup>{t(appLang, 'buyerLocation')}</Popup>
+271:              <Popup>{t(appLang, 'sellerLocation')}</Popup>
+286:              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t(appLang, 'estimatedArrival')}</p>
+291:            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t(appLang, 'status')}</p>
+294:              {t(appLang, 'delivering')}
+477:        <h1 className="text-3xl font-bold text-slate-900">{t(appLang, 'explore')}</h1>
+483:            {t(appLang, 'mapView')}
+489:            {t(appLang, 'listView')}
+497:            <h3 className="font-bold text-slate-900 px-2">{t(appLang, 'nearbySellers')}</h3>
+562:                        {t(appLang, 'chatWithSeller')}
+581:        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t(appLang, 'advertisement')}</p>
+582:        <button onClick={watchAd} className="text-xs text-indigo-600 font-bold hover:underline">{t(appLang, 'watchAd')}</button>
+629:              {t(appLang, 'limitedOffer')}
+654:                {t(appLang, 'startShopping')}
+658:                {t(appLang, 'watchAd')}
+701:              <h2 className="text-2xl font-black text-slate-900">{t(appLang, 'flashSale')}</h2>
+705:          <button className="text-sm font-bold text-indigo-600 hover:underline">{t(appLang, 'viewAll')}</button>
+738:          <h2 className="text-xl font-bold text-slate-900">{t(appLang, 'popularCategories')}</h2>
+759:              <span className="text-xs font-bold text-slate-700">{t(appLang, `cat${cat.id}`)}</span>
+768:          <h2 className="text-xl font-bold text-slate-900">{t(appLang, 'nearbySellers')}</h2>
+769:          <button onClick={() => setActiveTab('Explore')} className="text-sm font-bold text-indigo-600 hover:underline">{t(appLang, 'catAll')}</button>
+800:            {searchQuery ? t(appLang, 'searchResults') : (selectedCategory === 'All' ? t(appLang, 'trendingNow') : t(appLang, `cat${selectedCategory}`))}
+802:          <span className="text-slate-500 text-sm">{filteredProducts.length} {t(appLang, 'items')}</span>
+808:            <p className="text-lg font-medium text-slate-900">{t(appLang, 'noProductsFound')}</p>
+809:            <p>{t(appLang, 'tryAdjusting')}</p>
+841:                  <p className="text-slate-500 text-xs font-medium mb-1 uppercase tracking-wider">{t(appLang, `cat${product.category}`)}</p>
+878:        <h1 className="text-3xl font-bold text-slate-900">{t(appLang, 'shoppingCart')}</h1>
+880:          {cart.length} {t(appLang, 'items')}
+889:          <h2 className="text-xl font-bold text-slate-900 mb-2">{t(appLang, 'cartEmpty')}</h2>
+890:          <p className="text-slate-500 mb-8">{t(appLang, 'cartEmptyText')}</p>
+895:            {t(appLang, 'startShopping')}
+935:            <h3 className="font-bold text-slate-900 mb-6 text-lg">{t(appLang, 'orderSummary')}</h3>
+938:                <span>{t(appLang, 'subtotal')}</span>
+942:                <span>{t(appLang, 'shipping')}</span>
+943:                <span className="text-emerald-600 font-bold">{t(appLang, 'free')}</span>
+946:                <span className="text-lg font-bold text-slate-900">{t(appLang, 'total')}</span>
+954:              <CreditCard className="w-6 h-6" /> {t(appLang, 'checkout')}
+982:        <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+984:      <h2 className="text-2xl font-bold text-slate-900">{t(appLang, 'settings')}</h2>
+989:        <h3 className="font-bold text-slate-900 mb-4">{t(appLang, 'language')}</h3>
+1016:        <h3 className="font-bold text-slate-900 mb-4">{t(appLang, 'notifications')}</h3>
+1019:            <span className="text-slate-600">{t(appLang, 'orderUpdates')}</span>
+1025:            <span className="text-slate-600">{t(appLang, 'promotions')}</span>
+1048:        <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+1050:      <h2 className="text-2xl font-bold text-slate-900">{t(appLang, 'helpSupport')}</h2>
+1087:      showToast(t(appLang, 'addressSavedSuccess'));
+1089:      showToast(t(appLang, 'addressSavedFail'));
+1105:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+1107:        <h2 className="text-2xl font-bold text-slate-900">{t(appLang, 'paymentMethods')}</h2>
+1127:          {t(appLang, 'save')}
+1147:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+1193:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+1298:          <h2 className="text-2xl font-bold text-slate-900 mb-2">{t(appLang, 'welcome')}</h2>
+1299:          <p className="text-slate-500 mb-8">{t(appLang, 'signInToManage')}</p>
+1346:          <span className="w-2 h-2 rounded-full bg-green-500"></span> {t(appLang, userRole)} {t(appLang, 'account')}
+1352:            <p className="text-slate-500 text-xs uppercase tracking-wider mt-1">{t(appLang, 'orders')}</p>
+1356:            <p className="text-slate-500 text-xs uppercase tracking-wider mt-1">{t(appLang, 'saved')}</p>
+1360:            <p className="text-slate-500 text-xs uppercase tracking-wider mt-1">{t(appLang, 'reviews')}</p>
+1368:            <Crown className="w-5 h-5 text-amber-600" /> {t(appLang, 'adminControlPanel')}
+1372:            <p className="text-sm font-bold text-slate-700 mb-2">{t(appLang, 'pendingPremium')}</p>
+1388:                      {t(appLang, 'approve')}
+1394:                      {t(appLang, 'reject')}
+1402:                <p className="text-sm text-slate-400">{t(appLang, 'noPendingRequests')}</p>
+1416:              <h3 className="font-bold text-slate-900">{isPremium ? t(appLang, 'premiumMember') : t(appLang, 'membership')}</h3>
+1418:                {isPremium ? t(appLang, 'noAds') : 
+1419:                 premiumStatus === 'pending' ? t(appLang, 'requestPending') :
+1420:                 premiumStatus === 'rejected' ? t(appLang, 'requestRejected') :
+1421:                 t(appLang, 'upgradeToPremium')}
+1430:              {t(appLang, 'upgradeToPremium')}
+1435:              {t(appLang, 'pending')}
+1442:            <p className="text-sm text-slate-600 mb-3 text-left">{t(appLang, 'supportApp')}</p>
+1457:              {t(appLang, 'watchAd')}
+1470:              <Plus className="w-5 h-5" /> {t(appLang, 'addNewProduct')}
+1492:              <span className="font-medium text-slate-700">{item.isCustom ? item.key : t(appLang, item.key as any)}</span>
+1501:          <span className="font-bold text-indigo-600">{t(appLang, 'switchTo')} {userRole === 'buyer' ? t(appLang, 'seller') : t(appLang, 'buyer')} {t(appLang, 'account')}</span>
+1511:        {t(appLang, 'logout')}
+1764:      showToast(`${t(appLang, 'switchedTo')} ${newRole} ${t(appLang, 'account')}`);
+1773:      showToast(t(appLang, 'loginToRequestPremium'));
+1779:      showToast(t(appLang, 'premiumRequestSent'));
+1782:      showToast(t(appLang, 'premiumRequestFail'));
+1792:      showToast(t(appLang, 'userApproved'));
+1795:      showToast(t(appLang, 'approveFail'));
+1805:      showToast(t(appLang, 'userRejected'));
+1808:      showToast(t(appLang, 'rejectFail'));
+1838:      showToast(t(appLang, 'addressSavedSuccess'));
+1841:      showToast(t(appLang, 'addressSavedFail'));
+1848:      showToast(t(appLang, 'addressDeletedSuccess'));
+1851:      showToast(t(appLang, 'addressDeletedFail'));
+1862:      showToast(t(appLang, 'adFinished'));
+2017:      showToast(t(appLang, 'signInToCheckout'));
+2043:      showToast(t(appLang, 'orderPlacedSuccess'));
+2047:      showToast(t(appLang, 'orderPlacedFail'));
+2070:      showToast(t(appLang, 'geoNotSupported'));
+2075:    showToast(t(appLang, 'startDeliveryMsg'));
+2106:    showToast(t(appLang, 'deliveryCompleted'));
+2127:      <h1 className="text-3xl font-bold text-slate-900 mb-6">{t(appLang, 'savedItems')}</h1>
+2134:          <h3 className="text-xl font-bold text-slate-900 mb-2">{t(appLang, 'noSavedItems')}</h3>
+2139:            {t(appLang, 'exploreProducts')}
+2203:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+2205:        <h2 className="text-2xl font-bold text-slate-900">{userRole === 'seller' ? t(appLang, 'sellerOrders') : t(appLang, 'myOrders')}</h2>
+2214:                  <p className="text-xs text-slate-500 uppercase tracking-wider">{t(appLang, 'orderId')}: {order.id.slice(-8)}</p>
+2215:                  <p className="text-sm font-bold text-slate-900 mt-1">{t(appLang, 'orderDate')}: {new Date(order.createdAt).toLocaleDateString()}</p>
+2222:                  {t(appLang, 'status')}: {order.status}
+2233:                  <p className="text-slate-600 text-sm">{order.items.length} {t(appLang, 'items')}</p>
+2243:                    <Navigation className="w-5 h-5" /> {t(appLang, 'startDelivery')}
+2255:                    <CheckCircle className="w-5 h-5" /> {t(appLang, 'markAsDelivered')}
+2265:          <p className="text-slate-500">{t(appLang, 'noOrders')}</p>
+2295:          <span className="font-bold text-slate-600 text-sm">{t(appLang, 'back')}</span>
+2297:        <h2 className="text-2xl font-bold text-slate-900">{t(appLang, 'shippingAddresses')}</h2>
+2319:                    {addr.isDefault && <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">{t(appLang, 'defaultAddress')}</span>}
+2338:        <p className="text-slate-500">{t(appLang, 'noAddresses')}</p>
+2357:            <h3 className="text-2xl font-bold text-slate-900">{t(appLang, 'addNewAddress')}</h3>
+2365:                <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'fullName')}</label>
+2369:                <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'phone')}</label>
+2373:                <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'addressLine')}</label>
+2377:                <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'city')}</label>
+2381:                <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'pickLocation')}</label>
+2386:                <label htmlFor="isDefault" className="text-sm font-medium text-slate-600">{t(appLang, 'defaultAddress')}</label>
+2389:                {t(appLang, 'saveAddress')}
+2436:      showToast(t(appLang, 'productAddedSuccess'));
+2442:      showToast(t(appLang, 'productAddedFail'));
+2460:          <h2 className="text-xl font-bold text-slate-900">{t(appLang, 'addNewProduct')}</h2>
+2468:              <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'productTitle')}</label>
+2472:              <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'productDescription')}</label>
+2477:                <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'price')}</label>
+2481:                <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'currency')}</label>
+2483:                  <option value="MMK">MMK ({t(appLang, 'kyat')})</option>
+2484:                  <option value="THB">THB ({t(appLang, 'baht')})</option>
+2485:                  <option value="USD">USD ({t(appLang, 'dollar')})</option>
+2486:                  <option value="LAK">LAK ({t(appLang, 'kip')})</option>
+2487:                  <option value="CNY">CNY ({t(appLang, 'yuan')})</option>
+2492:              <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'category')}</label>
+2499:                  <option key={c} value={c}>{t(appLang, `cat${c}`)}</option>
+2501:                <option value="Other">{t(appLang, 'other')}</option>
+2515:              <label className="block text-sm font-medium text-slate-700 mb-1">{t(appLang, 'image')}</label>
+2549:            {t(appLang, 'listProduct')}
+2565:      <h1 className="text-3xl font-bold text-slate-900">{t(appLang, 'liveChatTranslation')}</h1>
+2566:      <p className="text-slate-500 mt-2">{t(appLang, 'realTimeChat')}</p>
+2650:                  <p className="text-slate-500 text-sm font-medium uppercase tracking-wider mb-2">{t(appLang, `cat${selectedProduct.category}`)}</p>
+2686:                    <h3 className="text-sm font-bold text-slate-900 mb-3">{t(appLang, 'color')}</h3>
+2704:                      <h3 className="text-sm font-bold text-slate-900">{t(appLang, 'size')}</h3>
+2705:                      <button className="text-indigo-600 text-xs font-medium hover:underline">{t(appLang, 'sizeGuide')}</button>
+2728:                <h3 className="text-lg font-bold text-slate-900 mb-3">{t(appLang, 'description')}</h3>
+2748:                <MessageCircle className="w-5 h-5" /> <span className="hidden sm:inline">{t(appLang, 'chatWithSeller')}</span><span className="sm:hidden">{t(appLang, 'chat')}</span>
+2754:                <ShoppingBag className="w-5 h-5" /> <span className="hidden sm:inline">{t(appLang, 'addToCart')}</span><span className="sm:hidden">{t(appLang, 'add')}</span>
+2810:              {t(appLang, 'appName')}
+2819:                  {item === 'Home' ? t(appLang, 'home') : item === 'Explore' ? t(appLang, 'explore') : item === 'Live' ? t(appLang, 'live') : t(appLang, 'chat')}
+2842:                placeholder={t(appLang, 'searchPlaceholder')} 
+2890:          {t(appLang, 'appName')}
+2909:            placeholder={t(appLang, 'searchPlaceholder')} 
+3030:                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{t(appLang, 'sponsoredAd')}</span>
+3033:                  <span className="text-xs font-medium">{t(appLang, 'liveAd')}</span>
+3042:                    <h2 className="text-xl font-bold text-slate-900">{t(appLang, 'support')} {t(appLang, 'appName')}</h2>
+3043:                    <p className="text-slate-500 text-sm">{t(appLang, 'adSupportText')}</p>
+3063:                {t(appLang, 'closingIn')}
+3074:            { id: 'Home', icon: Home, label: t(appLang, 'home') },
+3075:            { id: 'Explore', icon: MapIcon, label: t(appLang, 'explore') },
+3076:            { id: 'Live', icon: Video, label: t(appLang, 'live') },
+3077:            { id: 'Chat', icon: MessageCircle, label: t(appLang, 'chat') },
+3078:            { id: 'Favorites', icon: Heart, badge: favorites.size, label: t(appLang, 'saved') },
+3079:            { id: 'Profile', icon: User, label: t(appLang, 'profile') },
