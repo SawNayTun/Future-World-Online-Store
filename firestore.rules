@@ -41,7 +41,7 @@ service cloud.firestore {
     }
 
     function isValidUser(data) {
-      return data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'role', 'language', 'isPremium', 'premiumStatus', 'createdAt', 'lastLogin', 'bio', 'paymentDetails', 'shopLocation', 'homeLocation']) &&
+      return data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'role', 'language', 'isPremium', 'premiumStatus', 'createdAt', 'lastLogin', 'bio', 'paymentDetails', 'shopLocation', 'homeLocation', 'phone']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              (!('displayName' in data) || data.displayName == null || (data.displayName is string && data.displayName.size() >= 0 && data.displayName.size() < 100)) &&
              (!('email' in data) || data.email == null || (data.email is string && isValidEmail(data.email))) &&
@@ -53,6 +53,7 @@ service cloud.firestore {
              (!('createdAt' in data) || data.createdAt is string) &&
              (!('lastLogin' in data) || data.lastLogin is string) &&
              (!('bio' in data) || data.bio is string && data.bio.size() < 1000) &&
+             (!('phone' in data) || data.phone is string && data.phone.size() < 20) &&
              (!('paymentDetails' in data) || data.paymentDetails is string && data.paymentDetails.size() < 1000) &&
              (!('shopLocation' in data) || data.shopLocation == null || (data.shopLocation is map && data.shopLocation.keys().hasOnly(['latitude', 'longitude']) && data.shopLocation.latitude is number && data.shopLocation.longitude is number)) &&
              (!('homeLocation' in data) || data.homeLocation == null || (data.homeLocation is map && data.homeLocation.keys().hasOnly(['latitude', 'longitude']) && data.homeLocation.latitude is number && data.homeLocation.longitude is number));
@@ -142,8 +143,8 @@ service cloud.firestore {
       allow update: if isAuthenticated() && isValidUser(request.resource.data) && uidNotModified() && 
                     (
                       (isOwner(userId) && 
-                       request.resource.data.isPremium == resource.data.isPremium && 
-                       (request.resource.data.premiumStatus == resource.data.premiumStatus || request.resource.data.premiumStatus == 'pending')
+                       request.resource.data.get('isPremium', false) == resource.data.get('isPremium', false) && 
+                       (request.resource.data.get('premiumStatus', 'none') == resource.data.get('premiumStatus', 'none') || request.resource.data.premiumStatus == 'pending')
                       ) || 
                       isAdmin()
                     );
@@ -176,6 +177,33 @@ service cloud.firestore {
                       request.resource.data.timestamp == resource.data.timestamp;
       }
     }
+    match /directChats/{chatId} {
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participants);
+      allow create: if isAuthenticated() && (request.auth.uid in request.resource.data.participants);
+      allow update: if isAuthenticated() && (request.auth.uid in resource.data.participants);
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants);
+        allow create: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants);
+      }
+    }
+    
+    match /friendships/{friendshipId} {
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participants);
+      allow create: if isAuthenticated() && (request.auth.uid in request.resource.data.participants);
+      allow update: if isAuthenticated() && (request.auth.uid in resource.data.participants);
+    }
+    
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
+      );
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
     // Favorites collection
     match /favorites/{favoriteId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;

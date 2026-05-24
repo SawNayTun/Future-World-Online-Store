@@ -1,5 +1,5 @@
 {
   "name": "Future World Online Store",
   "description": "A multi-language e-commerce platform with Google AdSense integration and premium memberships.",
-  "requestFramePermissions": ["geolocation"]
+  "requestFramePermissions": ["geolocation", "camera", "microphone"]
 }

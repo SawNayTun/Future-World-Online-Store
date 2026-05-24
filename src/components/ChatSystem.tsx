@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Send, User, Store, MapPin, ArrowLeft, Globe, MessageCircle, Check, CheckCheck, Image as ImageIcon } from 'lucide-react';
+import { Send, User, Store, MapPin, ArrowLeft, Globe, MessageCircle, Check, CheckCheck, Image as ImageIcon, Phone } from 'lucide-react';
 import { translateText } from '../services/geminiService';
 import { languages, LanguageCode, t } from '../i18n';
 import { Product, Seller } from '../types';
@@ -37,6 +37,7 @@ interface Chat {
   otherPartyName?: string;
   otherPartyAvatar?: string;
   otherPartyLanguage?: LanguageCode;
+  otherPartyPhone?: string;
   unreadCount?: number;
 }
 
@@ -82,6 +83,7 @@ export default function ChatSystem({ activeSeller, chatProduct, appLang, user, u
           data.otherPartyName = userData.displayName || 'Unknown User';
           data.otherPartyAvatar = userData.photoURL || 'https://via.placeholder.com/150';
           data.otherPartyLanguage = userData.language || 'en'; 
+          data.otherPartyPhone = userData.phone || '';
         }
 
         // Count unread messages
@@ -154,11 +156,41 @@ export default function ChatSystem({ activeSeller, chatProduct, appLang, user, u
         data.id = doc.id;
         msgList.push(data);
       });
+      
+      // Check for new messages from others to play sound
+      if (messages.length > 0 && msgList.length > messages.length) {
+        const lastMsg = msgList[msgList.length - 1];
+        if (lastMsg && lastMsg.senderId !== user?.uid) {
+          playNotificationSound();
+        }
+      }
+      
       setMessages(msgList);
     });
 
     return () => unsubscribe();
-  }, [activeChatId]);
+  }, [activeChatId, messages.length, user]);
+
+  const playNotificationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {
+      console.error("Audio play failed", e);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -348,15 +380,25 @@ export default function ChatSystem({ activeSeller, chatProduct, appLang, user, u
           <ArrowLeft className="w-5 h-5" />
         </button>
         {activeChat && (
-          <div className="flex items-center gap-3">
-            <img src={activeChat.otherPartyAvatar} alt={activeChat.otherPartyName} className="w-10 h-10 rounded-full object-cover shadow-sm" />
-            <div>
-              <h3 className="font-bold text-slate-900">{activeChat.otherPartyName}</h3>
-              <p className="text-xs text-slate-500 flex items-center gap-1">
-                <Globe className="w-3 h-3" /> {languages[activeChat.otherPartyLanguage || 'en']}
-              </p>
+          <>
+            <div className="flex items-center gap-3">
+              <img src={activeChat.otherPartyAvatar} alt={activeChat.otherPartyName} className="w-10 h-10 rounded-full object-cover shadow-sm" />
+              <div>
+                <h3 className="font-bold text-slate-900">{activeChat.otherPartyName}</h3>
+                <p className="text-xs text-slate-500 flex items-center gap-1">
+                  <Globe className="w-3 h-3" /> {languages[activeChat.otherPartyLanguage || 'en']}
+                </p>
+              </div>
             </div>
-          </div>
+            {activeChat.otherPartyPhone && (
+              <a 
+                href={`tel:${activeChat.otherPartyPhone}`}
+                className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors ml-auto flex-shrink-0"
+              >
+                <Phone className="w-5 h-5" />
+              </a>
+            )}
+          </>
         )}
       </div>
 

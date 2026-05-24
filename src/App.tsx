@@ -8,7 +8,7 @@ import {
   Moon, Sun, Shield, UserCircle, Store, Package,
   Shirt, Footprints, Smartphone, Watch, Grid, MessageSquare,
   Video, Flame, Zap, TrendingUp, BarChart2, PlayCircle, Share2, Edit2,
-  Utensils, Sparkles, Activity
+  Utensils, Sparkles, Activity, Users
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
@@ -259,6 +259,20 @@ const FitBounds = ({ buyer, seller }: { buyer: [number, number], seller: [number
 const AccountScreen = ({ user, setUser, setProfileView, appLang, showToast, userRole }: any) => {
   const [name, setName] = useState(user?.displayName || '');
   const [bio, setBio] = useState(user?.bio || '');
+  
+  const initialPhone = user?.phone || '';
+  let initialCode = '+95';
+  let initialNum = initialPhone;
+  ['+856', '+66', '+86', '+95'].forEach(c => {
+    if (initialPhone.startsWith(c)) {
+      initialCode = c;
+      initialNum = initialPhone.slice(c.length);
+    }
+  });
+  
+  const [phoneCode, setPhoneCode] = useState(initialCode);
+  const [phoneNumber, setPhoneNumber] = useState(initialNum.replace(/^\+/, ''));
+  
   const [shopLocation, setShopLocation] = useState<[number, number] | null>(
     user?.shopLocation ? [user.shopLocation.latitude, user.shopLocation.longitude] : null
   );
@@ -271,7 +285,17 @@ const AccountScreen = ({ user, setUser, setProfileView, appLang, showToast, user
     if (!user) return;
     setIsSaving(true);
     try {
-      const updateData: any = { displayName: name, bio };
+      const fullPhone = `${phoneCode}${phoneNumber.replace(/\s+/g, '')}`;
+      const updateData: any = { 
+        displayName: name, 
+        bio, 
+        phone: fullPhone,
+        uid: user.uid,
+        role: user.role || 'buyer',
+        language: appLang,
+        isPremium: user.isPremium || false,
+        premiumStatus: user.premiumStatus || 'none'
+      };
       if (shopLocation) {
         updateData.shopLocation = {
           latitude: shopLocation[0],
@@ -285,6 +309,9 @@ const AccountScreen = ({ user, setUser, setProfileView, appLang, showToast, user
         };
       }
       await setDoc(doc(db, 'users', user.uid), updateData, { merge: true });
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName: name });
+      }
       
       if (updateData.shopLocation || updateData.displayName) {
         const productsQuery = query(collection(db, 'products'), where('sellerId', '==', user.uid));
@@ -300,8 +327,9 @@ const AccountScreen = ({ user, setUser, setProfileView, appLang, showToast, user
       setUser({ ...user, ...updateData });
       showToast(t(appLang, 'profileUpdated'));
       setProfileView('main');
-    } catch (error) {
-      showToast(t(appLang, 'profileUpdateFail'));
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      showToast(appLang === 'my' ? `ပရိုဖိုင် အပ်ဒိတ်လုပ်မှု မအောင်မြင်ပါ: ${error.message}` : `Profile Update Fail: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -343,6 +371,28 @@ const AccountScreen = ({ user, setUser, setProfileView, appLang, showToast, user
             className="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 focus:ring-2 focus:ring-indigo-600"
             placeholder={t(appLang, 'namePlaceholder')}
           />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+          <div className="flex gap-2">
+            <select 
+              className="bg-slate-50 border-none rounded-2xl p-4 text-slate-900 focus:ring-2 focus:ring-indigo-600 outline-none"
+              value={phoneCode}
+              onChange={(e) => setPhoneCode(e.target.value)}
+            >
+              <option value="+95">+95</option>
+              <option value="+856">+856</option>
+              <option value="+66">+66</option>
+              <option value="+86">+86</option>
+            </select>
+            <input 
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="flex-1 bg-slate-50 border-none rounded-2xl p-4 text-slate-900 focus:ring-2 focus:ring-indigo-600"
+              placeholder="9..."
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2">{t(appLang, 'bio')}</label>
@@ -475,8 +525,9 @@ import { categories } from './data';
 import { Product, CartItem, Seller } from './types';
 import { languages, LanguageCode, t } from './i18n';
 import ChatSystem from './components/ChatSystem';
+import SocialScreen from './components/SocialScreen';
 import { auth, db, storage } from './firebase';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { collection, onSnapshot, query, orderBy, doc, setDoc, deleteDoc, getDoc, where, getDocs, addDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -1475,19 +1526,95 @@ const ProfileScreen = ({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="max-w-md mx-auto w-full pt-12"
+        className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4"
       >
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 text-center">
-          <div className="w-20 h-20 mx-auto bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-            <User className="w-10 h-10 text-indigo-600" />
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-200">
+            <Store className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">{t(appLang, 'welcome')}</h2>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t(appLang, 'welcome')}</h1>
           <p className="text-slate-500 mb-8">{t(appLang, 'signInToManage')}</p>
+
+          <form onSubmit={handlePhoneAuth} className="space-y-4 text-left mb-6">
+            {authMode === 'register' && (
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">{appLang === 'my' ? 'အမည်' : 'Name'}</label>
+                <input 
+                  type="text" 
+                  value={authName}
+                  onChange={(e) => setAuthName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-indigo-600 outline-none"
+                  placeholder={appLang === 'my' ? 'အမည်ထည့်ပါ' : 'Enter your name'}
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">{appLang === 'my' ? 'ဖုန်းနံပါတ်' : 'Phone Number'}</label>
+              <div className="flex gap-2">
+                <select 
+                  className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-indigo-600 outline-none"
+                  value={authCountryCode}
+                  onChange={(e) => setAuthCountryCode(e.target.value)}
+                >
+                  <option value="+95">+95 (Myanmar)</option>
+                  <option value="+856">+856 (Laos)</option>
+                  <option value="+66">+66 (Thailand)</option>
+                  <option value="+86">+86 (China)</option>
+                </select>
+                <input 
+                  type="tel" 
+                  value={authPhone}
+                  onChange={(e) => setAuthPhone(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-indigo-600 outline-none"
+                  placeholder="09..."
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">{appLang === 'my' ? 'စကားဝှက် (Password)' : 'Password'}</label>
+              <input 
+                type="password" 
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-indigo-600 outline-none"
+                placeholder="••••••"
+              />
+            </div>
+            <button 
+              type="submit"
+              disabled={authLoading}
+              className="w-full bg-indigo-600 text-white rounded-xl py-3 font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            >
+              {authLoading ? '...' : (authMode === 'login' ? (appLang === 'my' ? 'အကောင့်ဝင်မည်' : 'Login') : (appLang === 'my' ? 'အကောင့်ဖွင့်မည်' : 'Register'))}
+            </button>
+          </form>
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-px bg-slate-200 flex-1"></div>
+            <span className="text-xs text-slate-400 font-medium">OR</span>
+            <div className="h-px bg-slate-200 flex-1"></div>
+          </div>
+
           <button 
             onClick={handleLogin}
-            className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+            className="w-full bg-white border border-slate-200 text-slate-700 rounded-xl py-3 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors mb-4"
           >
-            Sign in with Google
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Continue with Google
+          </button>
+
+          <button 
+            onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+            className="text-indigo-600 font-bold text-sm hover:underline"
+          >
+            {authMode === 'login' 
+              ? (appLang === 'my' ? 'အကောင့်မရှိသေးဘူးလား? အကောင့်သစ်ဖွင့်မည်' : "Don't have an account? Register") 
+              : (appLang === 'my' ? 'အကောင့်ရှိပြီးသားလား? အကောင့်ဝင်မည်' : "Already have an account? Login")}
           </button>
         </div>
       </motion.div>
@@ -2374,6 +2501,12 @@ export default function App() {
   
   // Auth State
   const [user, setUser] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authPhone, setAuthPhone] = useState('');
+  const [authCountryCode, setAuthCountryCode] = useState('+95');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const [userRole, setUserRole] = useState<'buyer' | 'seller' | 'delivery'>('buyer');
   const [isPremium, setIsPremium] = useState(false);
   const [premiumStatus, setPremiumStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
@@ -2503,14 +2636,6 @@ export default function App() {
         const userRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userRef);
         
-        const profileData = {
-          uid: currentUser.uid,
-          displayName: currentUser.displayName,
-          email: currentUser.email,
-          photoURL: currentUser.photoURL,
-          lastLogin: new Date().toISOString()
-        };
-
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUserRole(userData.role || 'buyer');
@@ -2520,10 +2645,23 @@ export default function App() {
           if (userData.language) {
             setAppLang(userData.language as LanguageCode);
           }
-          // Sync profile data (Clerk/Supabase pattern)
+          
+          const profileData = {
+            lastLogin: new Date().toISOString(),
+            // Only update email and photoURL if they are missing, but don't overwrite custom displayName
+            email: currentUser.email,
+          };
+          
           await setDoc(userRef, profileData, { merge: true });
           setUser({ ...currentUser, ...userData, ...profileData });
         } else {
+          const profileData = {
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            email: currentUser.email,
+            photoURL: currentUser.photoURL,
+            lastLogin: new Date().toISOString()
+          };
           // Create user profile (Firebase Quickstart pattern)
           const newUser = {
             ...profileData,
@@ -2625,6 +2763,59 @@ export default function App() {
 
     return () => unsubscribe();
   }, [isAuthReady]);
+
+  const handlePhoneAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authPhone || !authPassword) {
+      showToast(appLang === 'my' ? 'ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ဖြည့်ပါ' : 'Please fill all fields');
+      return;
+    }
+    if (authMode === 'register' && !authName) {
+      showToast(appLang === 'my' ? 'နာမည်ထည့်ပါ' : 'Please enter your name');
+      return;
+    }
+
+    setAuthLoading(true);
+    const cleanPhone = authPhone.replace(/\s+/g, '');
+    const email = `${authCountryCode}${cleanPhone}@futureworld.app`;
+
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, email, authPassword);
+        showToast(t(appLang, 'welcome'));
+      } else {
+        const userCred = await createUserWithEmailAndPassword(auth, email, authPassword);
+        await updateProfile(userCred.user, { displayName: authName });
+        await setDoc(doc(db, 'users', userCred.user.uid), {
+          uid: userCred.user.uid,
+          displayName: authName,
+          phone: `${authCountryCode}${cleanPhone}`,
+          role: 'buyer',
+          language: appLang,
+          isPremium: false,
+          premiumStatus: 'none',
+          createdAt: new Date().toISOString(),
+          bio: ''
+        }, { merge: true });
+        showToast(appLang === 'my' ? 'အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်' : 'Account created successfully!');
+      }
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        showToast(appLang === 'my' ? 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်' : 'Invalid phone number or password');
+      } else if (error.code === 'auth/email-already-in-use') {
+        showToast(appLang === 'my' ? 'ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ဖွင့်ပြီးဖြစ်ပါသည်' : 'This phone number is already registered');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        showToast('Please enable Email/Password in Firebase Console');
+      } else if (error.code === 'auth/weak-password') {
+        showToast(appLang === 'my' ? 'စကားဝှက် အနည်းဆုံး ၆ လုံး ရှိရပါမည်' : 'Password must be at least 6 characters');
+      } else {
+        showToast(error.message);
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -2921,6 +3112,29 @@ export default function App() {
 
   // Format currency
   const formatPrice = (price: number, currency: string = 'USD') => {
+    if (appLang === 'my') {
+      const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+      const convertNumber = (num: number) => {
+        return num.toString().split('').map(char => {
+          if (char >= '0' && char <= '9') {
+            return myanmarNumbers[parseInt(char)];
+          }
+          return char;
+        }).join('');
+      };
+      
+      const formattedNum = convertNumber(price);
+      
+      switch (currency) {
+        case 'CNY': return `${formattedNum} ယွမ်`;
+        case 'MMK': return `${formattedNum} ကျပ်`;
+        case 'THB': return `${formattedNum} ဘတ်`;
+        case 'USD': return `${formattedNum} ဒေါ်လာ`;
+        case 'LAK': return `${formattedNum} ກີບ`; // Kip
+        default: return `${formattedNum} ${currency}`;
+      }
+    }
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -3464,13 +3678,13 @@ const FavoritesScreen = ({
               {t(appLang, 'appName')}
             </div>
             <nav className="flex gap-8">
-              {['Home', 'Explore', 'Live', 'Chat'].map(item => (
+              {['Home', 'Social', 'Explore', 'Live', 'Chat'].map(item => (
                 <button 
                   key={item} 
                   onClick={() => setActiveTab(item)}
                   className={`text-sm font-medium transition-colors ${activeTab === item ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
                 >
-                  {item === 'Home' ? t(appLang, 'home') : item === 'Explore' ? t(appLang, 'explore') : item === 'Live' ? t(appLang, 'live') : t(appLang, 'chat')}
+                  {item === 'Home' ? t(appLang, 'home') : item === 'Social' ? t(appLang, 'social') : item === 'Explore' ? t(appLang, 'explore') : item === 'Live' ? t(appLang, 'live') : t(appLang, 'chat')}
                 </button>
               ))}
             </nav>
@@ -3592,6 +3806,7 @@ const FavoritesScreen = ({
           )}
           {!selectedProduct && activeTab === 'Explore' && <ExploreScreen products={products} appLang={appLang} setActiveSeller={setActiveSeller} setActiveTab={setActiveTab} />}
           {!selectedProduct && activeTab === 'Live' && <LiveScreen setActiveTab={setActiveTab} appLang={appLang} products={products} setSelectedProduct={setSelectedProduct} />}
+          {!selectedProduct && activeTab === 'Social' && <SocialScreen user={user} appLang={appLang} showToast={showToast} />}
           {!selectedProduct && activeTab === 'Chat' && <ChatScreen appLang={appLang} activeSeller={activeSeller} chatProduct={chatProduct} user={user} userRole={userRole} setActiveSeller={setActiveSeller} setChatProduct={setChatProduct} />}
           {!selectedProduct && activeTab === 'Cart' && (
             <CartScreen 
@@ -3787,10 +4002,11 @@ const FavoritesScreen = ({
       </AnimatePresence>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 pb-safe">
-        <div className="flex justify-around items-center h-16 px-2">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 pb-safe overflow-x-auto">
+        <div className="flex justify-start sm:justify-around items-center h-16 px-2 min-w-max">
           {[
             { id: 'Home', icon: Home, label: t(appLang, 'home') },
+            { id: 'Social', icon: Users, label: t(appLang, 'social') },
             { id: 'Explore', icon: MapIcon, label: t(appLang, 'explore') },
             { id: 'Live', icon: Video, label: t(appLang, 'live') },
             { id: 'Chat', icon: MessageCircle, label: t(appLang, 'chat') },
